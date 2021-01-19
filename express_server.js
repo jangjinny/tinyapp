@@ -13,28 +13,33 @@ function generateRandomString() {
   return uniqueURL;
 }
 
-console.log(generateRandomString());
-
 
 app.set('view engine', 'ejs');
 
-const urlDatabase = {
+// const urlDatabase = {};
+
+let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-// console.log("test");
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  let uID = generateRandomString();
+  urlDatabase[uID] = req.body.longURL
+  console.log(urlDatabase)
+  res.redirect(`/urls/:${uID}`);
 });
+
+// app.post("/urls", (req, res) => {
+//   console.log(req.body);  // Log the POST request body to the console
+//   let uID = generateRandomString();
+//   res.redirect(`/urls/:${uID}`)       
+// });
+
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
