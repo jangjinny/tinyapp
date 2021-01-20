@@ -43,7 +43,6 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     username: req.cookies['username']
   };
-  console.log(req.cookies)
   res.render("urls_index", templateVars);
 });
 
@@ -87,6 +86,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   res.redirect("/urls");
+});
+
+//logout button submit handler
+app.post('/logout', (req, res) => {
+  res.clearCookie('username') //clears all stored cookies
+  res.redirect('/urls')
 });
 
 //listen to port
