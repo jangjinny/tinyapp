@@ -8,6 +8,8 @@ app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
+//----------DATABASES(user/url)----------//
+
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -27,7 +29,9 @@ const urlDatabase = {
   i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
-//function to generate unique id for shortURL
+//----------FUNCTIONS----------//
+
+//functions to generate unique id for shortURL
 function generateRandomString() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let uniqueURL = "";
@@ -59,9 +63,9 @@ function urlsForUser(id){
   return urls;
 };
 
-console.log(urlsForUser("aJ48lW"));
+//----------ROUTES----------//
 
-//register page
+//GET: register page
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -70,7 +74,7 @@ app.get("/register", (req, res) => {
   return res.render("urls_register", templateVars)
 });
 
-//register page submit handler
+//POST: register page submit handler
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
@@ -92,7 +96,7 @@ app.post("/register", (req, res) => {
   };
 });
 
-//login page
+//GET: login page
 app.get("/login", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -101,7 +105,7 @@ app.get("/login", (req, res) => {
   return res.render("urls_login", templateVars)
 });
 
-//login submit handler
+//POST: login submit handler
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -124,7 +128,7 @@ app.post('/login', (req, res) => {
     };
 });
 
-//create new url page
+//GET: create new url page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -133,7 +137,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//my urls page --> shows all saved urls
+//GET: my urls page --> shows all saved urls
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -142,7 +146,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//create new url submit handler --> generate unique ID when user submits a longURL
+//POST:create new url submit handler --> generate unique ID when user submits a longURL
 app.post("/urls", (req, res) => {
   const id = req.cookies["user_id"];
   const longURL = req.body.longURL;
@@ -156,7 +160,7 @@ app.post("/urls", (req, res) => {
   }
 });
 
-//url page for specific shortURL
+//GET: url page for specific shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL,
@@ -166,14 +170,14 @@ app.get("/urls/:shortURL", (req, res) => {
   return res.render("urls_show", templateVars);
 });
 
-//access long url page through short url
+//GET: access long url page through short url
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   return res.redirect(longURL);
 });
 
-//redirect to short url page to edit
+//POST: redirect to short url page to edit
 app.post('/urls/:shortURL', (req, res) => {
   const id = req.cookies["user_id"];
   const longURL = req.body.longURL;
@@ -183,7 +187,7 @@ app.post('/urls/:shortURL', (req, res) => {
   return res.redirect(`/urls/${shortURL}`)
 });
 
-//update existing long url 
+//POST: update existing long url 
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
@@ -192,25 +196,25 @@ app.post("/urls/:id", (req, res) => {
   return res.redirect("/urls")
 });
 
-//delete button page submit handler
+//POST: delete button page submit handler
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
   return res.redirect("/urls");
 });
 
-//logout button submit handler
+//POST: logout button submit handler
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id') //clears all stored cookies
   return res.redirect('/urls')
 });
 
-//catch all
+//GET: catch all
 app.get('*', (req, res) => {
   //if error.. direct to 404
 })
 
-//listen to port
+//LISTEN: listen to port
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
