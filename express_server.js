@@ -14,7 +14,7 @@ const users = {
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
+  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
@@ -29,6 +29,17 @@ function generateRandomString() {
     uniqueURL += characters.charAt((Math.floor(Math.random() * characters.length)));
   }
   return uniqueURL;
+};
+
+//function to check if email already exists
+function checkEmail(email, object) {
+  for (id in object) {
+    if (object[id]["email"] === email) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 };
 
 //database of all stored urls
@@ -51,6 +62,18 @@ app.post("/register", (req, res) => {
 
   const user = {id, email, password};
   users[id] = user;
+
+  //possible errors --> if email/pwd are empty strings, return 400
+  //if email is already registered, send back a 400 
+
+  if (!email) {
+    res.send('404: Please enter a valid email.')
+  } else if (!password) {
+    res.send('404: Please enter a valid password.')
+  };
+
+  
+
 
   res.cookie("user_id", users[id]["id"]);
   res.redirect("/urls")
