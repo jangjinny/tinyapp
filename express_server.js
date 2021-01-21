@@ -96,19 +96,16 @@ app.post('/login', (req, res) => {
   if (!emailExists(email)) {
     res.send('403 Error: This email does not exist.')
   } else {
-  for (userId in users) {
-    const user = users[userId];
-    if (user["email"] === email) {
-      const userPassword = user["password"];
-      console.log("user's password", userPassword);
-      console.log("given password", password);
-      if (userPassword !== password) {
-        res.send('403 Error: Incorrect password');
-      } else {
-          console.log("TEST")
+    for (userId in users) {
+      const user = users[userId];
+      if (user["email"] === email) {
+        const userPassword = user["password"];
+        if (userPassword !== password) {
+          res.send('403 Error: Incorrect password');
+        } else {
           res.cookie('user_id', user["id"])
           res.redirect('/urls')
-        }
+          }
         }
       } 
     }
