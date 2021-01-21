@@ -154,6 +154,8 @@ app.get("/urls/new", (req, res) => {
 //GET: my urls page --> shows all saved urls
 app.get("/urls", (req, res) => {
   const givenId = req.cookies["user_id"];
+  const urlDatabase = filterUrlDatabase(givenId);
+
   const templateVars = {
     urls: urlDatabase,
     user: users[givenId]
