@@ -46,7 +46,6 @@ function emailExists(email) {
   } return false;
 };
 
-
 //register page
 app.get("/register", (req, res) => {
   const templateVars = {
@@ -130,14 +129,15 @@ app.get("/urls", (req, res) => {
 
 //create new url submit handler --> generate unique ID when user submits a longURL
 app.post("/urls", (req, res) => {
+  const id = req.cookies["user_id"];
+  const longURL = req.body.longURL;
   //if the user if not logged in, redirect them to login page
-  console.log(req.cookies["user_id"])
   if (!req.cookies["user_id"]) {
     res.redirect("/login")
   } else {
-  let uID = generateRandomString();
-  const longURL = req.body.longURL;
-  urlDatabase[uID] = req.body.longURL //store in urlDatabase
+  const uID = generateRandomString();
+  urlDatabase[uID] = { "longURL": longURL, "userID": id};
+  console.log(urlDatabase)
   res.redirect(`/urls`);
   }
 });
@@ -146,7 +146,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL]["longURL"],
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
@@ -158,15 +158,24 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-//redirect to short url page to edit (should be get?)
-app.post('/urls/:shortURL/edit', (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
-  res.redirect(`/urls/${req.params.shortURL}`)
+//redirect to short url page to edit
+app.post('/urls/:shortURL', (req, res) => {
+  const id = req.cookies["user_id"];
+  const longURL = req.body.longURL;
+  const shortURL = req.params.shortURL;
+
+  urlDatabase[shortURL]["longURL"] = longURL;
+  console.log(urlDatabase)
+  res.redirect(`/urls/${shortURL}`)
 });
 
 //update existing long url 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+  const id = req.params.id;
+  const longURL = req.body.longURL;
+
+  urlDatabase[id]["longURL"] = longURL;
+  console.log(urlDatabase)
   res.redirect("/urls")
 });
 
@@ -180,7 +189,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //logout button submit handler
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id') //clears all stored cookies
-  console.log(users)
   res.redirect('/urls')
 });
 
