@@ -8,21 +8,22 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        
-      <% if (user["email"]) { %>
-        <span class="navbar-brand mb-0 h1">Logged in as:  <%= user["email"] %></span>
-        <form class="form-inline my-2 my-lg-0" method="POST" action="/logout">
-          <button type="submit" name="logout" class="btn btn-outline-light my-2 my-sm-0">Logout</button></form>
 
-      <% } else { %>        
+        <% if (user) { %>
+          <span class="navbar-brand mb-0 h1">Logged in as:  <%= user["email"] %></span>
+          <form class="form-inline my-2 my-lg-0" method="POST" action="/logout">
+            <button type="submit" name="logout" class="btn btn-outline-light my-2 my-sm-0">Logout</button></form>
+        <% } else { %> 
 
-      <!-- create a <form> that POSTs to /login. -->
-      <form class="form-inline my-2 my-lg-0" method="POST" action="/login">
-        <input class= "form-control mr-sm-2" type="text" name="username" placeholder="Username">
-        <button type="submit" class="btn btn-outline-light my-2 my-sm-0 ">Login</button></form>
+          <a class="nav-item nav-link" href="/login">Login</a>
+          <a class="nav-item nav-link" href="/register">Register</a>
+
+        <% } %>
       </div>
     </div>
-    <% } %>
     </div>
   </nav>
 </header>
+
+<!-- if user is not logged in, display login and register header
+if user is logged in, display email and logout button -->
