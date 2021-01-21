@@ -36,7 +36,6 @@ function generateRandomString() {
 function emailExists(email) {
   for (id in users) {
     if (users[id]["email"] === email) {
-      console.log(users[id]["email"])
       return true;
     }
   } return false;
@@ -59,7 +58,6 @@ app.get("/register", (req, res) => {
 
 //register page submit handler
 app.post("/register", (req, res) => {
-  // console.log(req.body);
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
@@ -75,6 +73,7 @@ app.post("/register", (req, res) => {
   } else {
     const user = {id, email, password};
     users[id] = user;
+    console.log(users)
     res.cookie("user_id", users[id]["id"]);
     res.redirect("/urls")
   };
@@ -86,14 +85,25 @@ app.get("/login", (req, res) => {
     urls: urlDatabase,
     user: users[req.cookies["user_id"]] //user object
   };
+  console.log(templateVars);
   res.render("urls_login", templateVars)
 });
 
 //login submit handler
 app.post('/login', (req, res) => {
   const email = req.body.email;
-  res.cookie('email', email);
-  res.redirect('/urls');
+  const password = req.body.password;
+
+  for (id in users) {
+    if (!users[id]["email"] === email) {
+        res.send('403 Error: This email does not exist.')
+      } else if (!users[id]["password"] === password) {
+        res.send('403 Error: Incorrect password');
+      } else {
+        res.cookie('user_id', users[id]["id"])
+        res.redirect('/urls')
+      }
+    }
 });
 
 //create new url page
@@ -159,7 +169,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //logout button submit handler
 app.post('/logout', (req, res) => {
-  res.clearCookie('username') //clears all stored cookies
+  res.clearCookie('user_id') //clears all stored cookies
+  console.log(users)
   res.redirect('/urls')
 });
 
