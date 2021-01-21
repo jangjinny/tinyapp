@@ -132,12 +132,11 @@ app.post("/urls", (req, res) => {
   const id = req.cookies["user_id"];
   const longURL = req.body.longURL;
   //if the user if not logged in, redirect them to login page
-  if (!req.cookies["user_id"]) {
+  if (!id) {
     res.redirect("/login")
   } else {
   const uID = generateRandomString();
   urlDatabase[uID] = { "longURL": longURL, "userID": id};
-  console.log(urlDatabase)
   res.redirect(`/urls`);
   }
 });
@@ -154,7 +153,8 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //access long url page through short url
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
 });
 
@@ -165,7 +165,6 @@ app.post('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
 
   urlDatabase[shortURL]["longURL"] = longURL;
-  console.log(urlDatabase)
   res.redirect(`/urls/${shortURL}`)
 });
 
@@ -175,7 +174,6 @@ app.post("/urls/:id", (req, res) => {
   const longURL = req.body.longURL;
 
   urlDatabase[id]["longURL"] = longURL;
-  console.log(urlDatabase)
   res.redirect("/urls")
 });
 
