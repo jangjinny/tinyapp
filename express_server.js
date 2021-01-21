@@ -95,8 +95,8 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  //hash password
-  const hashedPassword = bcrypt.hash(password, 10);
+  //salt and hash password
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   //possible errors --> if email/pwd are empty strings, return 400
   //if email is already registered, send back a 400 
@@ -107,7 +107,7 @@ app.post("/register", (req, res) => {
   } else if (emailExists(email)) {
     return res.send('404 Error: Email already exists.')
   } else {
-    const user = {id, email, password};
+    const user = {id, email, hashedPassword};
     users[id] = user;
     res.cookie("user_id", users[id]["id"]);
     return res.redirect("/urls")
@@ -134,8 +134,8 @@ app.post('/login', (req, res) => {
     for (userId in users) {
       const user = users[userId];
       if (user["email"] === email) {
-        const userPassword = user["password"];
-        if (userPassword !== password) {
+        const hashedPassword = user["hashedPassword"];
+        if (!bcrypt.compareSync(password, hashedPassword)) {
           res.send('403 Error: Incorrect password');
         } else {
           res.cookie('user_id', user["id"])
