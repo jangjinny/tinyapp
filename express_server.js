@@ -32,14 +32,14 @@ function generateRandomString() {
 };
 
 //function to check if email already exists
-function checkEmail(email, object) {
-  for (id in object) {
-    if (object[id]["email"] === email) {
+//return true if the email already exists
+function emailExists(email) {
+  for (id in users) {
+    if (users[id]["email"] === email) {
+      console.log(users[id]["email"])
       return true;
-    } else {
-      return false;
     }
-  }
+  } return false;
 };
 
 //database of all stored urls
@@ -60,23 +60,20 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  const user = {id, email, password};
-  users[id] = user;
-
   //possible errors --> if email/pwd are empty strings, return 400
   //if email is already registered, send back a 400 
-
   if (!email) {
-    res.send('404: Please enter a valid email.')
+    res.send('404 Error: Please enter a valid email.')
   } else if (!password) {
-    res.send('404: Please enter a valid password.')
+    res.send('404 Error: Please enter a valid password.')
+  } else if (emailExists(email)) {
+    res.send('404 Error: Email already exists.')
+  } else {
+    const user = {id, email, password};
+    users[id] = user;
+    res.cookie("user_id", users[id]["id"]);
+    res.redirect("/urls")
   };
-
-  
-
-
-  res.cookie("user_id", users[id]["id"]);
-  res.redirect("/urls")
 });
 
 //create new url page
