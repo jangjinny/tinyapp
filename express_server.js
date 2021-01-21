@@ -50,7 +50,11 @@ let urlDatabase = {
 
 //register page
 app.get("/register", (req, res) => {
-  res.render("urls_register")
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]]
+  };
+  res.render("urls_register", templateVars)
 });
 
 //register page submit handler
@@ -76,9 +80,29 @@ app.post("/register", (req, res) => {
   };
 });
 
+//login page
+app.get("/login", (req, res) => {
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]] //user object
+  };
+  res.render("urls_login", templateVars)
+});
+
+//login submit handler
+app.post('/login', (req, res) => {
+  const email = req.body.email;
+  res.cookie('email', email);
+  res.redirect('/urls');
+});
+
 //create new url page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]]
+  };
+  res.render("urls_new", templateVars);
 });
 
 //create new url submit handler --> generate unique ID when user submits a longURL
@@ -112,13 +136,6 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
-});
-
-//login submit handler
-app.post('/login', (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls');
 });
 
 //redirect to short url page to edit (should be get?)
