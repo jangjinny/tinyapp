@@ -21,6 +21,12 @@ const users = {
   }
 };
 
+//database of all stored urls
+const urlDatabase = {
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+};
+
 //function to generate unique id for shortURL
 function generateRandomString() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -40,11 +46,6 @@ function emailExists(email) {
   } return false;
 };
 
-//database of all stored urls
-let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
 
 //register page
 app.get("/register", (req, res) => {
