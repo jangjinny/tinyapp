@@ -31,8 +31,7 @@ function generateRandomString() {
   return uniqueURL;
 };
 
-//function to check if email already exists
-//return true if the email already exists
+//function to check if email already exists --> return true if the email already exists
 function emailExists(email) {
   for (id in users) {
     if (users[id]["email"] === email) {
@@ -73,7 +72,6 @@ app.post("/register", (req, res) => {
   } else {
     const user = {id, email, password};
     users[id] = user;
-    console.log(users)
     res.cookie("user_id", users[id]["id"]);
     res.redirect("/urls")
   };
@@ -105,10 +103,10 @@ app.post('/login', (req, res) => {
         } else {
           res.cookie('user_id', user["id"])
           res.redirect('/urls')
-          }
-        }
-      } 
-    }
+          };
+        };
+      };
+    };
 });
 
 //create new url page
@@ -120,14 +118,6 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//create new url submit handler --> generate unique ID when user submits a longURL
-app.post("/urls", (req, res) => {
-  let uID = generateRandomString();
-  const longURL = req.body.longURL;
-  urlDatabase[uID] = req.body.longURL //store in urlDatabase
-  res.redirect(`/urls`);
-});
-
 //my urls page --> shows all saved urls
 app.get("/urls", (req, res) => {
   const templateVars = {
@@ -135,6 +125,20 @@ app.get("/urls", (req, res) => {
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
+});
+
+//create new url submit handler --> generate unique ID when user submits a longURL
+app.post("/urls", (req, res) => {
+  //if the user if not logged in, redirect them to login page
+  console.log(req.cookies["user_id"])
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login")
+  } else {
+  let uID = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[uID] = req.body.longURL //store in urlDatabase
+  res.redirect(`/urls`);
+  }
 });
 
 //url page for specific shortURL
