@@ -19,7 +19,7 @@ const users = {
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
-}
+};
 
 //function to generate unique id for shortURL
 function generateRandomString() {
@@ -42,6 +42,20 @@ app.get("/register", (req, res) => {
   res.render("urls_register")
 });
 
+//register page submit handler
+app.post("/register", (req, res) => {
+  // console.log(req.body);
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const user = {id, email, password};
+  users[id] = user;
+
+  res.cookie("user_id", users[id]["id"]);
+  res.redirect("/urls")
+});
+
 //create new url page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
@@ -59,7 +73,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies['username']
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
 });
@@ -69,7 +83,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies['username']
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
