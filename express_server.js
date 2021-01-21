@@ -24,6 +24,11 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//register page
+app.get("/register", (req, res) => {
+  res.render("urls_register")
+});
+
 //create new url page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
