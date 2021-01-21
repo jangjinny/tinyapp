@@ -24,9 +24,11 @@ const users = {
 };
 
 //database of all stored urls
-const urlDatabase = {
+let urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
+  fmdl4r: { longURL: "https://www.amazon.ca", userID: "aea3rr" },
+  vv3fsa: { longURL: "https://www.youtube.com", userID: "aas23r" }
 };
 
 //----------FUNCTIONS----------//
@@ -50,18 +52,30 @@ function emailExists(email) {
   } return false;
 };
 
-//function to return the URLs where the userID is equal to the id of the logged-in user
-function urlsForUser(id){
+//function to return the shortURLs when the userID is equal to the id of the logged-in user
+function urlsForUser(id) {
   let urls = [];
   for (shortURL in urlDatabase) {
     const userId = urlDatabase[shortURL]["userID"];
     if (userId === id) {
-      longURL = urlDatabase[shortURL]["longURL"];
-      urls.push(`shortURL: ${shortURL}, longURL: ${longURL}`)
+      urls.push(shortURL)
     }
   }
   return urls;
 };
+
+//filter urlDatabase to matching IDs
+function filterUrlDatabase(givenId) {
+  const userURLs = urlsForUser(givenId); //array of shortURLs 
+  let filtered = {};
+
+  for (shortURL in urlDatabase) {
+    if (userURLs.includes(shortURL)) {
+      filtered[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return filtered; //returns an object with only the matching urls
+}
 
 //----------ROUTES----------//
 
@@ -139,9 +153,10 @@ app.get("/urls/new", (req, res) => {
 
 //GET: my urls page --> shows all saved urls
 app.get("/urls", (req, res) => {
+  const givenId = req.cookies["user_id"];
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies["user_id"]]
+    user: users[givenId]
   };
   res.render("urls_index", templateVars);
 });
