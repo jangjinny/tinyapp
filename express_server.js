@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -93,6 +94,9 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+
+  //hash password
+  const hashedPassword = bcrypt.hash(password, 10);
 
   //possible errors --> if email/pwd are empty strings, return 400
   //if email is already registered, send back a 400 
