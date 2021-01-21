@@ -64,7 +64,7 @@ function urlsForUser(id) {
   return urls;
 };
 
-//filter urlDatabase to matching IDs
+//filter urlDatabase to only contain shortURLS that matches the given IDs
 function filterUrlDatabase(givenId) {
   const userURLs = urlsForUser(givenId); //array of shortURLs 
   let filtered = {};
@@ -155,7 +155,6 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   const givenId = req.cookies["user_id"];
   const urlDatabase = filterUrlDatabase(givenId);
-
   const templateVars = {
     urls: urlDatabase,
     user: users[givenId]
@@ -206,18 +205,31 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //POST: update existing long url 
 app.post("/urls/:id", (req, res) => {
-  const id = req.params.id;
+  const shortURL = req.params.id;
   const longURL = req.body.longURL;
+  const id = req.cookies["user_id"];
+  const user = urlDatabase[shortURL]["userID"];
 
-  urlDatabase[id]["longURL"] = longURL;
-  return res.redirect("/urls")
+  if (id !== user) {
+    res.send("404 Error: Cannot update url.");
+  } else {
+    urlDatabase[shortURL]["longURL"] = longURL;
+    return res.redirect("/urls")
+  }
 });
 
 //POST: delete button page submit handler
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  return res.redirect("/urls");
+  const id = req.cookies["user_id"];
+  const user = urlDatabase[shortURL]["userID"];
+
+  if (id !== user) {
+    res.send("404 Error: Cannot delete url.");
+  } else {
+    delete urlDatabase[shortURL];
+    return res.redirect("/urls");
+  }
 });
 
 //POST: logout button submit handler
@@ -228,8 +240,8 @@ app.post('/logout', (req, res) => {
 
 //GET: catch all
 app.get('*', (req, res) => {
-  //if error.. direct to 404
-})
+  res.send("404 Error: SOMETHINGS WRONG")
+});
 
 //LISTEN: listen to port
 app.listen(PORT, () => {
