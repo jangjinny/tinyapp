@@ -189,8 +189,11 @@ app.get("/urls/:id", (req, res) => {
   const userId = req.session.user_id;
   const urlId = req.params.id;
   const storedUrl = urlDatabase[urlId];
+  const storedUserID = storedUrl["userID"];
 
-  if (!storedUrl) {
+  if (userId !== storedUserID) {
+    res.send("404 Error: Cannot access this URL.")
+  } else if (!storedUrl) {
     res.send("404 Error: This URL does not exist.");
   } else {
     const templateVars = {
@@ -229,9 +232,7 @@ app.post("/urls/:id/delete", (req, res) => {
   const urlId = req.params.id;
   const userId = req.session.user_id;
   const storedUser = urlDatabase[urlId]["userID"];
-  console.log("SHORTURL", urlId);
-  
-
+  const urlDatabase = filterUrlDatabase(userId);
 
   if (userId !== storedUser) {
     return res.send("404 Error❌❌❌: Cannot delete url.");
