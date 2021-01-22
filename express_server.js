@@ -192,9 +192,9 @@ app.get("/urls/:id", (req, res) => {
   const storedUserID = storedUrl["userID"];
 
   if (userId !== storedUserID) {
-    res.send("404 Error: Cannot access this URL.");
+    res.send("404 Error❌❌❌: Cannot access this URL.");
   } else if (!storedUrl) {
-    res.send("404 Error: This URL does not exist.");
+    res.send("404 Error❌❌❌: This URL does not exist.");
   } else {
     const templateVars = {
       shortURL: req.params.id,
