@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
+const { getUserByEmail } = require("./helpers")
 
 //----------MIDDLEWARE----------//
 
@@ -94,7 +95,6 @@ app.get("/register", (req, res) => {
     user: users[req.session.user_id]
   };
 
-  console.log(users[req.session.user_id])
   return res.render("urls_register", templateVars)
 });
 
@@ -104,7 +104,7 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  //salt and hash password
+  //hash password
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   //possible errors --> if email/pwd are empty strings, return 400
@@ -119,7 +119,7 @@ app.post("/register", (req, res) => {
     const user = {id, email, hashedPassword};
     users[id] = user;
     req.session.user_id = users[id]["id"];
-    res.redirect("/urls");
+    return res.redirect("/urls");
   };
 });
 
@@ -135,25 +135,17 @@ app.get("/login", (req, res) => {
 //POST: login submit handler
 app.post('/login', (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
-
-  if (!emailExists(email)) {
-    res.send('403 Error: This email does not exist.')
+  const givenPassword = req.body.password;
+  const userInfo = getUserByEmail(email, users); //object with user info
+  
+  if (!userInfo) {
+    return res.send('403 Error: This email does not exist.')
+  } else if (!bcrypt.compareSync(givenPassword, userInfo["hashedPassword"])) {
+    return res.send('403 Error: Incorrect password');
   } else {
-    for (userId in users) {
-      const user = users[userId];
-      if (user["email"] === email) {
-        const hashedPassword = user["hashedPassword"];
-        if (!bcrypt.compareSync(password, hashedPassword)) {
-          res.send('403 Error: Incorrect password');
-        } else {
-          // res.cookie('user_id', user["id"])
-          req.session.user_id = users["id"];
-          res.redirect('/urls')
-          };
-        };
-      };
-    };
+      req.session.user_id = userInfo["id"];
+      return res.redirect('/urls')
+    }
 });
 
 //GET: create new url page
@@ -167,37 +159,38 @@ app.get("/urls/new", (req, res) => {
 
 //GET: my urls page --> shows all saved urls
 app.get("/urls", (req, res) => {
-  const givenId = req.session.user_id;
-  const urlDatabase = filterUrlDatabase(givenId);
+  const userId = req.session.user_id;
+  const urlDatabase = filterUrlDatabase(userId);
   const templateVars = {
     urls: urlDatabase,
-    user: users[givenId]
+    user: users[userId]
   };
   res.render("urls_index", templateVars);
 });
 
 //POST:create new url submit handler --> generate unique ID when user submits a longURL
 app.post("/urls", (req, res) => {
-  const id = req.session.user_id;
+  const userId = req.session.user_id;
   const longURL = req.body.longURL;
   //if the user if not logged in, redirect them to login page
-  if (!id) {
+  if (!userId) {
     res.redirect("/login")
   } else {
   const uID = generateRandomString();
-  urlDatabase[uID] = { "longURL": longURL, "userID": id};
+  urlDatabase[uID] = { "longURL": longURL, "userID": userId};
   return res.redirect(`/urls`);
   }
 });
 
 //GET: url page for specific shortURL
 app.get("/urls/:shortURL", (req, res) => {
+  const userId = req.session.user_id;
+  const shortURL = req.params.shortURL;
   const templateVars = { 
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]["longURL"],
-    user: users[req.session.user_id]
+    longURL: urlDatabase[shortURL]["longURL"],
+    user: users[userId]
   };
-  console.log("USER COOKIE", users[req.session.user_id])
   return res.render("urls_show", templateVars);
 });
 
@@ -210,7 +203,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 //POST: redirect to short url page to edit
 app.post('/urls/:shortURL', (req, res) => {
-  const id = req.session.user_id;
+  // const userId = req.session.user_id;
   const longURL = req.body.longURL;
   const shortURL = req.params.shortURL;
 
@@ -222,11 +215,11 @@ app.post('/urls/:shortURL', (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = req.body.longURL;
-  const id = req.session.user_id;
-  const user = urlDatabase[shortURL]["userID"];
+  const userId = req.session.user_id;
+  const storedUser = urlDatabase[shortURL]["userID"];
 
-  if (id !== user) {
-    res.send("404 Error: Cannot update url.");
+  if (userId !== storedUser) {
+    return res.send("404 Error: Cannot update url.");
   } else {
     urlDatabase[shortURL]["longURL"] = longURL;
     return res.redirect("/urls")
@@ -236,11 +229,11 @@ app.post("/urls/:id", (req, res) => {
 //POST: delete button page submit handler
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  const id = req.session.user_id;
-  const user = urlDatabase[shortURL]["userID"];
+  const userId = req.session.user_id;
+  const storedUser = urlDatabase[shortURL]["userID"];
 
-  if (id !== user) {
-    res.send("404 Error: Cannot delete url.");
+  if (userId !== storedUser) {
+    return res.send("404 Error: Cannot delete url.");
   } else {
     delete urlDatabase[shortURL];
     return res.redirect("/urls");
