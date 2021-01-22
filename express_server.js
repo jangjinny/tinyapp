@@ -81,12 +81,12 @@ function filterUrlDatabase(givenId) {
 
 //----------ROUTES----------//
 
-//👉👉 GET---//home page
+//---GET---//home page
 app.get("/", (req, res) => {
   return res.redirect('/urls');
 });
 
-//👉👉 GET---//register page
+//---GET---//register page
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -96,7 +96,7 @@ app.get("/register", (req, res) => {
   return res.render("urls_register", templateVars);
 });
 
-//---POST 👈👈// register page submit handler
+//---POST---// register page submit handler
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
@@ -122,7 +122,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-//👉👉 GET---// login page
+//---GET---// login page
 app.get("/login", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -131,7 +131,7 @@ app.get("/login", (req, res) => {
   return res.render("urls_login", templateVars);
 });
 
-//---POST 👈👈// login submit handler
+//---POST---// login submit handler
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const givenPassword = req.body.password;
@@ -147,7 +147,7 @@ app.post('/login', (req, res) => {
   }
 });
 
-//👉👉 GET---// new url page
+//---GET---// new url page
 app.get("/urls/new", (req, res) => {
   const userId = req.session.user_id;
   const templateVars = {
@@ -162,7 +162,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-//👉👉 GET---// my urls page --> shows all of user's saved urls
+//---GET---// my urls page --> shows all of user's saved urls
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   const urlDatabase = filterUrlDatabase(userId);
@@ -173,7 +173,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//---POST 👈👈// create new url submit handler
+//---POST---// create new url submit handler
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const userId = req.session.user_id;
@@ -184,26 +184,32 @@ app.post("/urls", (req, res) => {
   return res.redirect(`/urls`);
 });
 
-//👉👉 GET---// url page for specific shortURL
+//---GET---// url page for specific shortURL
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.user_id;
   const urlId = req.params.id;
-  const templateVars = {
-    shortURL: req.params.id,
-    longURL: urlDatabase[urlId]["longURL"],
-    user: users[userId]
-  };
-  return res.render("urls_show", templateVars);
+  const storedUrl = urlDatabase[urlId];
+
+  if (!storedUrl) {
+    res.send("404 Error: This URL does not exist.");
+  } else {
+    const templateVars = {
+      shortURL: req.params.id,
+      longURL: urlDatabase[urlId]["longURL"],
+      user: users[userId]
+    };
+    return res.render("urls_show", templateVars);
+  }
 });
 
-//👉👉 GET---// access long url page through short url
+//---GET---// access long url page through short url
 app.get("/u/:id", (req, res) => {
   const urlId = req.params.id;
   const longURL = urlDatabase[urlId];
   return res.redirect(longURL);
 });
 
-//---POST 👈👈// update existing long url
+//---POST---// update existing long url
 app.post("/urls/:id", (req, res) => {
   const urlId = req.params.id;
   const longURL = req.body.longURL;
@@ -218,7 +224,7 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
-//---POST 👈👈// delete button page submit handler
+//---POST---// delete button page submit handler
 app.post("/urls/:id/delete", (req, res) => {
   const urlId = req.params.id;
   const userId = req.session.user_id;
@@ -235,13 +241,13 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
-//---POST 👈👈// logout button submit handler
+//---POST---// logout button submit handler
 app.post('/logout', (req, res) => {
   req.session = null; //clears all stored cookies
   return res.redirect('/urls');
 });
 
-//👉👉 GET---// catch all
+//---GET---// catch all
 app.get('*', (req, res) => {
   res.send("404 Error❌❌❌: Page not found.");
 });
@@ -251,7 +257,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-//👉👉 GET---//
+//---GET---//
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
