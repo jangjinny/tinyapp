@@ -185,49 +185,52 @@ app.post("/urls", (req, res) => {
 });
 
 //👉👉 GET---// url page for specific shortURL
-app.get("/urls/:shortURL", (req, res) => {
+app.get("/urls/:id", (req, res) => {
   const userId = req.session.user_id;
-  const shortURL = req.params.shortURL;
+  const urlId = req.params.id;
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[shortURL]["longURL"],
+    shortURL: req.params.id,
+    longURL: urlDatabase[urlId]["longURL"],
     user: users[userId]
   };
   return res.render("urls_show", templateVars);
 });
 
 //👉👉 GET---// access long url page through short url
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+app.get("/u/:id", (req, res) => {
+  const urlId = req.params.id;
+  const longURL = urlDatabase[urlId];
   return res.redirect(longURL);
 });
 
 //---POST 👈👈// update existing long url
 app.post("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
+  const urlId = req.params.id;
   const longURL = req.body.longURL;
   const userId = req.session.user_id;
-  const storedUser = urlDatabase[shortURL]["userID"];
+  const storedUser = urlDatabase[urlId]["userID"];
 
   if (userId !== storedUser) {
     return res.send("404 Error❌❌❌: Cannot update url.");
   } else {
-    urlDatabase[shortURL]["longURL"] = longURL;
+    urlDatabase[urlId]["longURL"] = longURL;
     return res.redirect("/urls");
   }
 });
 
 //---POST 👈👈// delete button page submit handler
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
+app.post("/urls/:id/delete", (req, res) => {
+  const urlId = req.params.id;
   const userId = req.session.user_id;
-  const storedUser = urlDatabase[shortURL]["userID"];
+  const storedUser = urlDatabase[urlId]["userID"];
+  console.log("SHORTURL", urlId);
+  
+
 
   if (userId !== storedUser) {
     return res.send("404 Error❌❌❌: Cannot delete url.");
   } else {
-    delete urlDatabase[shortURL];
+    delete urlDatabase[urlId];
     return res.redirect("/urls");
   }
 });
