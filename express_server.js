@@ -232,14 +232,13 @@ app.post("/urls/:id/delete", (req, res) => {
   const urlId = req.params.id;
   const userId = req.session.user_id;
   const storedUser = urlDatabase[urlId]["userID"];
-  const urlDatabase = filterUrlDatabase(userId);
 
   if (userId !== storedUser) {
     return res.send("404 Error❌❌❌: Cannot delete url.");
   } else {
     delete urlDatabase[urlId];
     return res.redirect("/urls");
-  }
+  };
 });
 
 //---POST---// logout button submit handler
