@@ -1,4 +1,4 @@
-const { getUserByEmail } = require("./helpers")
+const { getUserByEmail } = require("./helpers");
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -20,15 +20,15 @@ app.set('view engine', 'ejs');
 //----------DATABASES(user/url)----------//
 
 //database of all stored users
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
   "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
@@ -52,38 +52,38 @@ function generateRandomString() {
     uniqueID += characters.charAt((Math.floor(Math.random() * characters.length)));
   }
   return uniqueID;
-};
+}
 
 //function to return shortURLs when the userID is equal to the id of the logged-in user
 function urlsForUser(id) {
   let urls = [];
-  for (shortURL in urlDatabase) {
+  for (let shortURL in urlDatabase) {
     const userId = urlDatabase[shortURL]["userID"];
     if (userId === id) {
       urls.push(shortURL);
     }
   }
   return urls; //returns an array of shortURLs according to user ID
-};
+}
 
 //filter urlDatabase to only contain shortURLS that matches the given IDs
 function filterUrlDatabase(givenId) {
-  const userURLs = urlsForUser(givenId); //array of shortURLs 
+  const userURLs = urlsForUser(givenId); //array of shortURLs
   let filteredData = {};
 
-  for (shortURL in urlDatabase) {
+  for (let shortURL in urlDatabase) {
     if (userURLs.includes(shortURL)) {
       filteredData[shortURL] = urlDatabase[shortURL];
     }
   }
   return filteredData; //returns an object with only the matching urls
-};
+}
 
 //----------ROUTES----------//
 
 //👉👉 GET---//home page
 app.get("/", (req, res) => {
-  return res.redirect('/urls')
+  return res.redirect('/urls');
 });
 
 //👉👉 GET---//register page
@@ -93,7 +93,7 @@ app.get("/register", (req, res) => {
     user: users[req.session.user_id]
   };
 
-  return res.render("urls_register", templateVars)
+  return res.render("urls_register", templateVars);
 });
 
 //---POST 👈👈// register page submit handler
@@ -107,19 +107,19 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   //possible errors --> if email/pwd are empty strings, return 400
-  //if email is already registered, send back a 400 
+  //if email is already registered, send back a 400
   if (!email) {
-    return res.send('404 Error❌❌❌: Please enter a valid email.')
+    return res.send('404 Error❌❌❌: Please enter a valid email.');
   } else if (!password) {
-    return res.send('404 Error❌❌❌: Please enter a valid password.')
+    return res.send('404 Error❌❌❌: Please enter a valid password.');
   } else if (userInfo) {
-    return res.send('404 Error❌❌❌: Email already exists.')
+    return res.send('404 Error❌❌❌: Email already exists.');
   } else {
     const user = {id, email, hashedPassword};
     users[id] = user;
     req.session.user_id = users[id]["id"];
     return res.redirect("/urls");
-  };
+  }
 });
 
 //👉👉 GET---// login page
@@ -128,7 +128,7 @@ app.get("/login", (req, res) => {
     urls: urlDatabase,
     user: users[req.session.user_id] //user object
   };
-  return res.render("urls_login", templateVars)
+  return res.render("urls_login", templateVars);
 });
 
 //---POST 👈👈// login submit handler
@@ -138,13 +138,13 @@ app.post('/login', (req, res) => {
   const userInfo = getUserByEmail(email, users); //object with user info
   
   if (!userInfo) {
-    return res.send('403 Error❌❌❌: This email does not exist.')
+    return res.send('403 Error❌❌❌: This email does not exist.');
   } else if (!bcrypt.compareSync(givenPassword, userInfo["hashedPassword"])) {
     return res.send('403 Error❌❌❌: Incorrect password');
   } else {
-      req.session.user_id = userInfo["id"];
-      return res.redirect('/urls')
-    }
+    req.session.user_id = userInfo["id"];
+    return res.redirect('/urls');
+  }
 });
 
 //👉👉 GET---// new url page
@@ -156,10 +156,10 @@ app.get("/urls/new", (req, res) => {
   };
   //if the user if not logged in, redirect them to login page
   if (!userId) {
-  res.redirect("/login")
+    res.redirect("/login");
   } else {
-  res.render("urls_new", templateVars);
-  };
+    res.render("urls_new", templateVars);
+  }
 });
 
 //👉👉 GET---// my urls page --> shows all of user's saved urls
@@ -188,7 +188,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.user_id;
   const shortURL = req.params.shortURL;
-  const templateVars = { 
+  const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[shortURL]["longURL"],
     user: users[userId]
@@ -203,7 +203,7 @@ app.get("/u/:shortURL", (req, res) => {
   return res.redirect(longURL);
 });
 
-//---POST 👈👈// update existing long url 
+//---POST 👈👈// update existing long url
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = req.body.longURL;
@@ -214,7 +214,7 @@ app.post("/urls/:id", (req, res) => {
     return res.send("404 Error❌❌❌: Cannot update url.");
   } else {
     urlDatabase[shortURL]["longURL"] = longURL;
-    return res.redirect("/urls")
+    return res.redirect("/urls");
   }
 });
 
@@ -235,12 +235,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //---POST 👈👈// logout button submit handler
 app.post('/logout', (req, res) => {
   req.session = null; //clears all stored cookies
-  return res.redirect('/urls')
+  return res.redirect('/urls');
 });
 
 //👉👉 GET---// catch all
 app.get('*', (req, res) => {
-  res.send("404 Error❌❌❌: Page not found.")
+  res.send("404 Error❌❌❌: Page not found.");
 });
 
 //LISTEN: listen to port
