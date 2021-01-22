@@ -2,8 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
-const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
+const cookieSession = require('cookie-session');
 
 //----------MIDDLEWARE----------//
 
@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(cookieSession({
   name: "user_id",
-  keys: "1q2w3e4" //random
+  keys: ["1q2w3e4"] //random
 }));
 
 app.set('view engine', 'ejs');
@@ -66,7 +66,7 @@ function urlsForUser(id) {
   for (shortURL in urlDatabase) {
     const userId = urlDatabase[shortURL]["userID"];
     if (userId === id) {
-      urls.push(shortURL)
+      urls.push(shortURL);
     }
   }
   return urls;
@@ -83,7 +83,7 @@ function filterUrlDatabase(givenId) {
     }
   }
   return filtered; //returns an object with only the matching urls
-}
+};
 
 //----------ROUTES----------//
 
@@ -148,7 +148,7 @@ app.post('/login', (req, res) => {
           res.send('403 Error: Incorrect password');
         } else {
           // res.cookie('user_id', user["id"])
-          req.session.userid = users["id"];
+          req.session.user_id = users["id"];
           res.redirect('/urls')
           };
         };
@@ -197,6 +197,7 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL]["longURL"],
     user: users[req.session.user_id]
   };
+  console.log("USER COOKIE", users[req.session.user_id])
   return res.render("urls_show", templateVars);
 });
 
