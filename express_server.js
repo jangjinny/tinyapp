@@ -81,6 +81,11 @@ function filterUrlDatabase(givenId) {
 
 //----------ROUTES----------//
 
+//👉👉 GET---//home page
+app.get("/", (req, res) => {
+  return res.redirect('/urls')
+});
+
 //👉👉 GET---//register page
 app.get("/register", (req, res) => {
   const templateVars = {
