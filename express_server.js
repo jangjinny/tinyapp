@@ -52,15 +52,6 @@ function generateRandomString() {
   return uniqueURL;
 };
 
-//function to check if email already exists --> return true if the email already exists
-function emailExists(email) {
-  for (id in users) {
-    if (users[id]["email"] === email) {
-      return true;
-    }
-  } return false;
-};
-
 //function to return the shortURLs when the userID is equal to the id of the logged-in user
 function urlsForUser(id) {
   let urls = [];
@@ -103,6 +94,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const userInfo = getUserByEmail(email, users);
 
   //hash password
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -113,7 +105,7 @@ app.post("/register", (req, res) => {
     return res.send('404 Error: Please enter a valid email.')
   } else if (!password) {
     return res.send('404 Error: Please enter a valid password.')
-  } else if (emailExists(email)) {
+  } else if (userInfo) {
     return res.send('404 Error: Email already exists.')
   } else {
     const user = {id, email, hashedPassword};
