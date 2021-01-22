@@ -8,24 +8,30 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+      </div>
+    </div>
 
         <% if (!user) { %>
 
-          <a class="nav-item nav-link" href="/login">Login</a>
-          <a class="nav-item nav-link" href="/register">Register</a>
-          
-          <% } else { %>
+      <div class="navbar-nav">  
+        <ul class="nav justify-content-end">
+            <a class="nav-item nav-link" href="/login">Login</a>
+            <a class="nav-item nav-link" href="/register">Register</a>
+        </ul>
+      </div>
 
-          <span class="navbar-brand mb-0 h1">Logged in as:  <%= user["email"] %></span>
+          <% } else { %>
+          
+        <div class="navbar-nav"> 
+        <ul class="nav justify-content-end">
+          <span class="navbar-brand mb-0 h1 ">Logged in as:  <%= user["email"] %></span>
           <form class="form-inline my-2 my-lg-0" method="POST" action="/logout">
             <button type="submit" name="logout" class="btn btn-outline-light my-2 my-sm-0">Logout</button></form>
+          </ul>
+        </div>
 
         <% } %>
+        
       </div>
-    </div>
-    </div>
   </nav>
 </header>
-
-<!-- if user is not logged in, display login and register header
-if user is logged in, display email and logout button -->
