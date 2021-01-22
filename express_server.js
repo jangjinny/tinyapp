@@ -1,10 +1,10 @@
+const { getUserByEmail } = require("./helpers")
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
-const { getUserByEmail } = require("./helpers")
 
 //----------MIDDLEWARE----------//
 
@@ -19,6 +19,7 @@ app.set('view engine', 'ejs');
 
 //----------DATABASES(user/url)----------//
 
+//database of all stored users
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -40,19 +41,20 @@ let urlDatabase = {
   vv3fsa: { longURL: "https://www.youtube.com", userID: "aas23r" }
 };
 
-//----------FUNCTIONS----------//
+//----------HELPER FUNCTIONS----------//
 
-//functions to generate unique id for shortURL
+//function to generate unique id for shortURL
+//function also used to generate user ID
 function generateRandomString() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let uniqueURL = "";
+  let uniqueID = "";
   for (let i = 0; i < 6; i++) {
-    uniqueURL += characters.charAt((Math.floor(Math.random() * characters.length)));
+    uniqueID += characters.charAt((Math.floor(Math.random() * characters.length)));
   }
-  return uniqueURL;
+  return uniqueID;
 };
 
-//function to return the shortURLs when the userID is equal to the id of the logged-in user
+//function to return shortURLs when the userID is equal to the id of the logged-in user
 function urlsForUser(id) {
   let urls = [];
   for (shortURL in urlDatabase) {
@@ -61,25 +63,25 @@ function urlsForUser(id) {
       urls.push(shortURL);
     }
   }
-  return urls;
+  return urls; //returns an array of shortURLs according to user ID
 };
 
 //filter urlDatabase to only contain shortURLS that matches the given IDs
 function filterUrlDatabase(givenId) {
   const userURLs = urlsForUser(givenId); //array of shortURLs 
-  let filtered = {};
+  let filteredData = {};
 
   for (shortURL in urlDatabase) {
     if (userURLs.includes(shortURL)) {
-      filtered[shortURL] = urlDatabase[shortURL];
+      filteredData[shortURL] = urlDatabase[shortURL];
     }
   }
-  return filtered; //returns an object with only the matching urls
+  return filteredData; //returns an object with only the matching urls
 };
 
 //----------ROUTES----------//
 
-//GET: register page
+//👉👉 GET---//register page
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -89,7 +91,7 @@ app.get("/register", (req, res) => {
   return res.render("urls_register", templateVars)
 });
 
-//POST: register page submit handler
+//---POST 👈👈// register page submit handler
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
@@ -102,11 +104,11 @@ app.post("/register", (req, res) => {
   //possible errors --> if email/pwd are empty strings, return 400
   //if email is already registered, send back a 400 
   if (!email) {
-    return res.send('404 Error: Please enter a valid email.')
+    return res.send('404 Error❌❌❌: Please enter a valid email.')
   } else if (!password) {
-    return res.send('404 Error: Please enter a valid password.')
+    return res.send('404 Error❌❌❌: Please enter a valid password.')
   } else if (userInfo) {
-    return res.send('404 Error: Email already exists.')
+    return res.send('404 Error❌❌❌: Email already exists.')
   } else {
     const user = {id, email, hashedPassword};
     users[id] = user;
@@ -115,7 +117,7 @@ app.post("/register", (req, res) => {
   };
 });
 
-//GET: login page
+//👉👉 GET---// login page
 app.get("/login", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -124,32 +126,38 @@ app.get("/login", (req, res) => {
   return res.render("urls_login", templateVars)
 });
 
-//POST: login submit handler
+//---POST 👈👈// login submit handler
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const givenPassword = req.body.password;
   const userInfo = getUserByEmail(email, users); //object with user info
   
   if (!userInfo) {
-    return res.send('403 Error: This email does not exist.')
+    return res.send('403 Error❌❌❌: This email does not exist.')
   } else if (!bcrypt.compareSync(givenPassword, userInfo["hashedPassword"])) {
-    return res.send('403 Error: Incorrect password');
+    return res.send('403 Error❌❌❌: Incorrect password');
   } else {
       req.session.user_id = userInfo["id"];
       return res.redirect('/urls')
     }
 });
 
-//GET: create new url page
+//👉👉 GET---// new url page
 app.get("/urls/new", (req, res) => {
+  const userId = req.session.user_id;
   const templateVars = {
     urls: urlDatabase,
     user: users[req.session.user_id]
   };
+  //if the user if not logged in, redirect them to login page
+  if (!userId) {
+  res.redirect("/login")
+  } else {
   res.render("urls_new", templateVars);
+  };
 });
 
-//GET: my urls page --> shows all saved urls
+//👉👉 GET---// my urls page --> shows all of user's saved urls
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   const urlDatabase = filterUrlDatabase(userId);
@@ -160,21 +168,18 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//POST:create new url submit handler --> generate unique ID when user submits a longURL
+//---POST 👈👈// create new url submit handler
 app.post("/urls", (req, res) => {
+  const id = generateRandomString();
   const userId = req.session.user_id;
   const longURL = req.body.longURL;
-  //if the user if not logged in, redirect them to login page
-  if (!userId) {
-    res.redirect("/login")
-  } else {
-  const uID = generateRandomString();
-  urlDatabase[uID] = { "longURL": longURL, "userID": userId};
+
+  //generate unique ID when user submits a longURL
+  urlDatabase[id] = { "longURL": longURL, "userID": userId};
   return res.redirect(`/urls`);
-  }
 });
 
-//GET: url page for specific shortURL
+//👉👉 GET---// url page for specific shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.user_id;
   const shortURL = req.params.shortURL;
@@ -186,24 +191,14 @@ app.get("/urls/:shortURL", (req, res) => {
   return res.render("urls_show", templateVars);
 });
 
-//GET: access long url page through short url
+//👉👉 GET---// access long url page through short url
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   return res.redirect(longURL);
 });
 
-//POST: redirect to short url page to edit
-app.post('/urls/:shortURL', (req, res) => {
-  // const userId = req.session.user_id;
-  const longURL = req.body.longURL;
-  const shortURL = req.params.shortURL;
-
-  urlDatabase[shortURL]["longURL"] = longURL;
-  return res.redirect(`/urls/${shortURL}`)
-});
-
-//POST: update existing long url 
+//---POST 👈👈// update existing long url 
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = req.body.longURL;
@@ -211,36 +206,36 @@ app.post("/urls/:id", (req, res) => {
   const storedUser = urlDatabase[shortURL]["userID"];
 
   if (userId !== storedUser) {
-    return res.send("404 Error: Cannot update url.");
+    return res.send("404 Error❌❌❌: Cannot update url.");
   } else {
     urlDatabase[shortURL]["longURL"] = longURL;
     return res.redirect("/urls")
   }
 });
 
-//POST: delete button page submit handler
+//---POST 👈👈// delete button page submit handler
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const userId = req.session.user_id;
   const storedUser = urlDatabase[shortURL]["userID"];
 
   if (userId !== storedUser) {
-    return res.send("404 Error: Cannot delete url.");
+    return res.send("404 Error❌❌❌: Cannot delete url.");
   } else {
     delete urlDatabase[shortURL];
     return res.redirect("/urls");
   }
 });
 
-//POST: logout button submit handler
+//---POST 👈👈// logout button submit handler
 app.post('/logout', (req, res) => {
   req.session = null; //clears all stored cookies
   return res.redirect('/urls')
 });
 
-//GET: catch all
+//👉👉 GET---// catch all
 app.get('*', (req, res) => {
-  res.send("404 Error: SOMETHINGS WRONG")
+  res.send("404 Error❌❌❌: Page not found.")
 });
 
 //LISTEN: listen to port
@@ -248,6 +243,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+//👉👉 GET---//
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
