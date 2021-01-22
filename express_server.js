@@ -205,7 +205,7 @@ app.get("/urls/:id", (req, res) => {
 //---GET---// access long url page through short url
 app.get("/u/:id", (req, res) => {
   const urlId = req.params.id;
-  const longURL = urlDatabase[urlId];
+  const longURL = urlDatabase[urlId]["longURL"];
   return res.redirect(longURL);
 });
 
